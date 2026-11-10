@@ -1,6 +1,7 @@
 from .interface import BaseAdapter
 from .engine import AuditEngine
 from .reporter import AuditReporter
+from .dataset import DatasetAudit, DatasetReport
 
 class AuditAgent:
     def __init__(self, adapter):
@@ -10,4 +11,4 @@ class AuditAgent:
         raw_data = self.engine.run_audit(image, dims, lvls)
         return AuditReporter(raw_data)
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
