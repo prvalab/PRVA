@@ -92,6 +92,36 @@ Run the tests: `python -m unittest discover -s tests`
 
 ---
 
+## 📈 Dataset Audit (v0.2): metrics, confidence intervals, red line
+
+`AuditAgent` scores one image. `DatasetAudit` runs the same stressors over a set of images and reports, per level:
+
+| Metric | Meaning |
+| :--- | :--- |
+| `recall` | share of reference objects still found (same label, IoU ≥ 0.5, score ≥ 0.35) |
+| `mean_iou` / `mean_conf` | IoU and confidence of the matched objects |
+| `precision` | share of kept predictions that match a reference object |
+| `overconfidence` | mean confidence of the kept predictions minus their precision (> 0: more confident than correct) |
+
+The reference is your ground truth (`[{"box": [x1, y1, x2, y2], "label": ...}]` per image) or, without it, the
+model's own detections on the clean image. Confidence intervals come from a bootstrap over images; the **red line** is
+the first level whose recall upper bound falls below 0.8 × the clean recall (`frac` sets the factor). Every run is
+seeded (ISO noise included), and the JSON report (`schema: prva.report/1`) records the PRVA version, levels, seed,
+thresholds and a hash of every image.
+
+```python
+from pv_audit import DatasetAudit
+
+class MyDetector:                      # return boxes, labels and scores (the legacy {"conf": x} form also works)
+    def predict(self, image):
+        return {"boxes": [[10, 20, 110, 220]], "labels": ["person"], "scores": [0.91]}
+
+report = DatasetAudit(MyDetector(), model_name="my-detector").run(
+    images,                             # [image, ...] or [(image, ground_truth), ...]
+    dims=["DPI", "Lux-", "ISO"], lvls=range(0, 100, 10))
+report.to_json("prva_report.json"); report.to_csv("prva_report.csv"); report.plot("prva_report.png")
+```
+
 ## 🗺️ Roadmap: The Evolution of Industrial Reliability
 
 ### Phase 1: Physical Audit (The Present)

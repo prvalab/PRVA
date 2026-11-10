@@ -17,7 +17,8 @@ class AuditEngine:
         report_data = []
         for dim in dims:
             for lvl in lvls:
-                stressed_img = self.operators[dim](image, lvl)
+                stressed_img = (self.operators[dim](image, lvl, seed=0) if dim == "ISO"
+                                else self.operators[dim](image, lvl))
                 prediction = self.adapter.predict(stressed_img)
                 report_data.append({
                     "dimension": dim, 

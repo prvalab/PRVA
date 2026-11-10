@@ -40,8 +40,12 @@ class StressSimulator:
         return cv2.filter2D(img, -1, k, borderType=cv2.BORDER_REFLECT)
 
     @staticmethod
-    def apply_iso_noise(img: np.ndarray, val: int) -> np.ndarray:
-        noise = np.random.normal(0, val, img.shape)
+    def apply_iso_noise(img: np.ndarray, val: int, seed: int = 0) -> np.ndarray:
+        """Sensor noise: Gaussian, sigma = val grey levels. Seeded, so the same input gives the same image
+        (pass a different seed per image or repeat for variation). 0 = unchanged."""
+        if val <= 0:
+            return img
+        noise = np.random.default_rng(seed).normal(0, val, img.shape)
         return np.clip(img.astype(np.float32) + noise, 0, 255).astype(np.uint8)
 
     @staticmethod
